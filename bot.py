@@ -52,6 +52,8 @@ class AionRoleBot(commands.Bot):
         await self.load_extension("cogs.legions")
         await self.load_extension("cogs.admin")
         await self.load_extension("cogs.roles")
+        await self.load_extension("cogs.events")
+        await self.load_extension("cogs.rifts")
 
         await self.tree.sync()
 
