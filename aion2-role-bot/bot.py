@@ -12,10 +12,13 @@ LOCK_EXEMPT_COMMANDS = {"boss_panel"}
 GUILD_ID = os.getenv("GUILD_ID")
 
 
+FREE_COMMANDS = {"Translate", "mylanguage", "translate"}
+
+
 class ChannelLockedTree(app_commands.CommandTree):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        command = interaction.command
-        if command is not None and command.name in LOCK_EXEMPT_COMMANDS:
+        name = interaction.command.name if interaction.command else None
+        if name in FREE_COMMANDS:
             return True
         if ALLOWED_CHANNEL_ID and interaction.channel_id != ALLOWED_CHANNEL_ID:
             await interaction.response.send_message(

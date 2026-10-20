@@ -6,8 +6,14 @@ from discord.ext import commands
 from config import DISCORD_TOKEN, LOG_LEVEL, ALLOWED_CHANNEL_ID
 from database import Database
 
+FREE_COMMANDS = {"Translate", "mylanguage", "translate"}
+
+
 class ChannelLockedTree(app_commands.CommandTree):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        name = interaction.command.name if interaction.command else None
+        if name in FREE_COMMANDS:
+            return True
         if ALLOWED_CHANNEL_ID and interaction.channel_id != ALLOWED_CHANNEL_ID:
             await interaction.response.send_message(
                 f"This bot only works in <#{ALLOWED_CHANNEL_ID}>.",
