@@ -1,4 +1,6 @@
 import logging
+import os
+
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -6,8 +8,15 @@ from discord.ext import commands
 from config import DISCORD_TOKEN, LOG_LEVEL, ALLOWED_CHANNEL_ID
 from database import Database
 
+LOCK_EXEMPT_COMMANDS = {"boss_panel"}
+GUILD_ID = os.getenv("GUILD_ID")
+
+
 class ChannelLockedTree(app_commands.CommandTree):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        command = interaction.command
+        if command is not None and command.name in LOCK_EXEMPT_COMMANDS:
+            return True
         if ALLOWED_CHANNEL_ID and interaction.channel_id != ALLOWED_CHANNEL_ID:
             await interaction.response.send_message(
                 f"This bot only works in <#{ALLOWED_CHANNEL_ID}>.",
@@ -33,7 +42,8 @@ class ChannelLockedTree(app_commands.CommandTree):
             await interaction.followup.send(text, ephemeral=True)
         else:
             await interaction.response.send_message(text, ephemeral=True)
-        
+
+
 class AionRoleBot(commands.Bot):
     def __init__(self) -> None:
         intents = discord.Intents.default()
@@ -54,8 +64,14 @@ class AionRoleBot(commands.Bot):
         await self.load_extension("cogs.roles")
         await self.load_extension("cogs.events")
         await self.load_extension("cogs.rifts")
+        await self.load_extension("cogs.fieldboss")
 
-        await self.tree.sync()
+        if GUILD_ID:
+            guild = discord.Object(id=int(GUILD_ID))
+            self.tree.copy_global_to(guild=guild)
+            await self.tree.sync(guild=guild)
+        else:
+            await self.tree.sync()
 
     async def on_ready(self) -> None:
         logging.getLogger("bot").info(
