@@ -1,0 +1,6 @@
+.env
+.venv/
+__pycache__/
+*.db
+fieldboss_state.json
+translate_prefs.json
